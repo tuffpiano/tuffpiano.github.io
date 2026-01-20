@@ -1,135 +1,239 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Aria Math Piano</title>
-
+<title>RUSH E Piano</title>
 <style>
-body{
-  margin:0;
-  background:#000;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  overflow-x:auto;
-}
-.piano{
-  display:flex;
-  padding:20px;
-  background:#111;
-  border-radius:14px;
-}
-.key{
-  width:44px;
-  height:260px;
-  background:linear-gradient(#fff,#ddd);
-  border:1px solid #aaa;
-  margin:1px;
-  cursor:pointer;
-  transition:.05s;
-}
-.key.active{
-  background:#bbb;
-  transform:translateY(6px);
-}
+  body {
+    margin: 0;
+    background: #0d0d0d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    overflow-x: auto;
+    color: #eee;
+  }
+
+  .container {
+    text-align: center;
+  }
+
+  h1 {
+    margin: 20px 0 10px;
+    font-size: 2.1rem;
+    letter-spacing: 2px;
+    color: #ff4444;
+    text-shadow: 0 0 10px rgba(255,60,60,0.6);
+  }
+
+  .piano {
+    display: flex;
+    padding: 30px 20px;
+    background: linear-gradient(#222, #111);
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+    user-select: none;
+  }
+
+  .key {
+    position: relative;
+    width: 48px;
+    height: 280px;
+    background: linear-gradient(175deg, #fff 0%, #f0f0f0 50%, #e0e0e0 100%);
+    border: 1px solid #888;
+    border-radius: 0 0 8px 8px;
+    margin: 0 3px;
+    cursor: pointer;
+    transition: all 0.08s ease;
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.6);
+  }
+
+  .key.black {
+    position: absolute;
+    width: 32px;
+    height: 170px;
+    background: linear-gradient(#444, #222, #111);
+    border: 1px solid #000;
+    border-radius: 0 0 6px 6px;
+    margin: 0;
+    z-index: 10;
+    box-shadow: 3px 6px 12px rgba(0,0,0,0.8);
+  }
+
+  .key:hover {
+    filter: brightness(1.08);
+  }
+
+  .key.active {
+    background: #ccc !important;
+    transform: translateY(8px);
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+  }
+
+  .key.black.active {
+    background: #555 !important;
+  }
+
+  .instructions {
+    margin-top: 20px;
+    font-size: 1.1rem;
+    opacity: 0.8;
+  }
 </style>
 </head>
-
 <body>
-<div class="piano" id="piano"></div>
+
+<div class="container">
+  <h1>RUSH E Piano</h1>
+
+  <div class="piano" id="piano"></div>
+
+  <div class="instructions">
+    Press <strong>0</strong> to start RUSH E (cheat mode)<br>
+    Each press plays the next part + speeds up slightly
+  </div>
+</div>
 
 <script>
-const AudioContext = window.AudioContext||window.webkitAudioContext;
+const AudioContext = window.AudioContext || window.webkitAudioContext;
 const ctx = new AudioContext();
 
-function piano(freq){
-  const now=ctx.currentTime;
-  const out=ctx.createGain();
-  out.gain.setValueAtTime(.7,now);
-  out.gain.exponentialRampToValueAtTime(.001,now+3);
-  out.connect(ctx.destination);
+function playNote(freq, type = "triangle", duration = 3, velocity = 0.7) {
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
 
-  [1,2,3,4].forEach((m,i)=>{
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
-    o.type="triangle";
-    o.frequency.value=freq*m;
-    g.gain.setValueAtTime(.6/(i+1),now);
-    g.gain.exponentialRampToValueAtTime(.001,now+2.5);
-    o.connect(g); g.connect(out);
-    o.start(); o.stop(now+3);
-  });
+  osc.type = type;
+  osc.frequency.value = freq;
+
+  gain.gain.setValueAtTime(velocity, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(now);
+  osc.stop(now + duration + 0.1);
 }
 
-/* ---- NOTES (4 octaves) ---- */
-const notes=[
-"C2","D2","E2","F2","G2","A2","B2",
-"C3","D3","E3","F3","G3","A3","B3",
-"C4","D4","E4","F4","G4","A4","B4",
-"C5","D5","E5","F5","G5","A5","B5"
-];
+// Better sounding piano-like note (with multiple harmonics)
+function piano(freq) {
+  const now = ctx.currentTime;
+  const velocities = [0.75, 0.45, 0.28, 0.12];
+  [1, 2, 3, 4.5].forEach((mul, i) => {
+    playNote(freq * mul, "triangle", 2.8 + i*0.3, velocities[i]);
+  });
+  // Add a tiny sawtooth component for attack
+  playNote(freq, "sawtooth", 0.08, 0.25);
+}
 
-const f={
-C2:65.41,D2:73.42,E2:82.41,F2:87.31,G2:98,A2:110,B2:123.47,
-C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
-C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
-C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880,B5:987.77
+// Frequencies (A4 = 440 Hz)
+const f = {
+  "C3": 130.81, "C#3": 138.59, "D3": 146.83, "D#3": 155.56, "E3": 164.81, "F3": 174.61, "F#3": 185.00, "G3": 196.00, "G#3": 207.65, "A3": 220.00, "A#3": 233.08, "B3": 246.94,
+  "C4": 261.63, "C#4": 277.18, "D4": 293.66, "D#4": 311.13, "E4": 329.63, "F4": 349.23, "F#4": 369.99, "G4": 392.00, "G#4": 415.30, "A4": 440.00, "A#4": 466.16, "B4": 493.88,
+  "C5": 523.25, "C#5": 554.37, "D5": 587.33, "D#5": 622.25, "E5": 659.25, "F5": 698.46, "F#5": 739.99, "G5": 783.99, "G#5": 830.61, "A5": 880.00, "A#5": 932.33, "B5": 987.77,
+  "C6": 1046.50
 };
 
-/* ---- ARIA MATH (GUIDED STEPS) ---- */
-const ariaMath=[
-["A3"],["C4"],["E4"],["A4"],
-["G4"],["E4"],["C4"],["A3"],
-["A3","E4"],["C4","A4"],
-["E4","C5"],["A4","E5"],
+// RUSH E – iconic parts (simplified but recognizable)
+// Each array = simultaneous notes (chords/arpeggio layers)
+const rushE = [
+  ["A4", "E5", "A5"],           // opening power
+  ["G4", "D5", "G5"],
+  ["F#4", "C#5", "F#5"],
+  ["E4", "B4", "E5"],
 
-// beat drop
-["A3","E4","A4"],
-["C4","G4","C5"],
-["E4","A4","E5"],
-["A4","C5","A5"],
-["G4","D5","G5"]
+  ["A4", "E5", "A5", "C#6"],    // rising
+  ["G4", "D5", "G5", "B5"],
+  ["F#4", "C#5", "F#5", "A5"],
+  ["E4", "B4", "E5", "G#5"],
+
+  // faster part
+  ["A4", "C#5", "E5", "A5"],
+  ["B4", "D5", "F#5", "B5"],
+  ["C#5", "E5", "G#5", "C#6"],
+  ["D5", "F#5", "A5", "D6"],
+
+  // dramatic section
+  ["E5", "G#5", "B5", "E6"],
+  ["F#5", "A5", "C#6", "F#6"],
+  ["G#5", "B5", "D#6", "G#6"],
+  ["A5", "C#6", "E6", "A6"],    // high point
+
+  // ending flourish
+  ["A4", "E5", "A5"],
+  ["G4", "D5", "G5"],
+  ["F#4", "C#5", "F#5"],
+  ["E4", "B4", "E5"]
 ];
 
-let cheat=false;
-let i=0;
-let speed=420;
+let cheat = false;
+let index = 0;
+let speed = 380; // starting interval in ms (lower = faster)
 
-/* ---- BUILD ---- */
-const pianoDiv=document.getElementById("piano");
-const keyMap={};
+const pianoDiv = document.getElementById("piano");
+const keyElements = {};
 
-notes.forEach(n=>{
-  const k=document.createElement("div");
-  k.className="key";
-  k.onclick=()=>play([n]);
-  pianoDiv.appendChild(k);
-  keyMap[n]=k;
+// Create visual piano (white + black keys)
+const whiteNotes = ["C3","D3","E3","F3","G3","A3","B3","C4","D4","E4","F4","G4","A4","B4","C5","D5","E5","F5","G5","A5","B5","C6"];
+const allNotes = ["C3","C#3","D3","D#3","E3","F3","F#3","G3","G#3","A3","A#3","B3","C4","C#4","D4","D#4","E4","F4","F#4","G4","G#4","A4","A#4","B4","C5","C#5","D5","D#5","E5","F5","F#5","G5","G#5","A5","A#5","B5","C6"];
+
+allNotes.forEach((note, i) => {
+  const key = document.createElement("div");
+  key.className = "key";
+  if (note.includes("#")) {
+    key.className += " black";
+    // Position black keys
+    const whiteIndex = whiteNotes.indexOf(note.replace("#",""));
+    key.style.left = `${whiteIndex * 51 + 35}px`;
+  }
+  key.onclick = () => {
+    piano(f[note]);
+    key.classList.add("active");
+    setTimeout(() => key.classList.remove("active"), 140);
+  };
+  pianoDiv.appendChild(key);
+  keyElements[note] = key;
 });
 
-function play(arr){
-  arr.forEach(n=>{
-    piano(f[n]);
-    keyMap[n].classList.add("active");
-    setTimeout(()=>keyMap[n].classList.remove("active"),120);
+function playChord(notesArray) {
+  notesArray.forEach(note => {
+    if (f[note]) {
+      piano(f[note]);
+      if (keyElements[note]) {
+        keyElements[note].classList.add("active");
+        setTimeout(() => keyElements[note].classList.remove("active"), 160);
+      }
+    }
   });
 }
 
-/* ---- INPUT ---- */
-document.addEventListener("keydown",e=>{
-  if(e.key==="0"){
-    cheat=!cheat;
-    i=0;
-    speed=420;
+// Cheat mode: press 0 to play RUSH E step by step
+document.addEventListener("keydown", e => {
+  if (e.key === "0") {
+    cheat = !cheat;
+    if (cheat) {
+      index = 0;
+      speed = 380;
+      alert("RUSH E cheat mode ON!\nKeep pressing 0 to advance (gets faster)");
+    } else {
+      alert("RUSH E cheat mode OFF");
+    }
     return;
   }
-  if(!cheat) return;
 
-  play(ariaMath[i]);
-  i=(i+1)%ariaMath.length;
-  speed*=0.94; // progressive speed-up
+  if (!cheat) return;
+
+  // Play current part
+  playChord(rushE[index]);
+
+  // Move to next + speed up
+  index = (index + 1) % rushE.length;
+  speed = Math.max(60, speed * 0.935); // progressive speedup, min 60ms
 });
+
 </script>
 </body>
 </html>
