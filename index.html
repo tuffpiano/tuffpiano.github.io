@@ -2,147 +2,194 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>HTML Piano</title>
+<title>Moonlight Sonata Cheat Piano</title>
 
 <style>
 body {
-  background: #111;
+  margin: 0;
+  background: radial-gradient(circle at top, #222, #000);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-family: sans-serif;
+  font-family: Arial, sans-serif;
 }
 
 .piano {
-  display: flex;
   position: relative;
+  display: flex;
+  padding: 20px;
+  background: #111;
+  border-radius: 14px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.8);
 }
 
 .key {
-  border: 1px solid black;
+  position: relative;
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding-bottom: 8px;
-  font-size: 11px;
   user-select: none;
 }
 
 .white {
-  width: 45px;
-  height: 220px;
+  width: 52px;
+  height: 260px;
   background: linear-gradient(#fff, #ddd);
+  border: 1px solid #aaa;
+  border-radius: 0 0 6px 6px;
+  box-shadow: inset 0 -4px 4px rgba(0,0,0,0.2);
 }
 
 .white.active {
-  background: #ccc;
+  background: linear-gradient(#ddd, #bbb);
+  transform: translateY(4px);
 }
 
 .black {
-  width: 30px;
-  height: 140px;
-  background: linear-gradient(#000, #333);
-  color: white;
+  width: 32px;
+  height: 160px;
+  background: linear-gradient(#111, #000);
   position: absolute;
   top: 0;
-  z-index: 2;
-  margin-left: -15px;
+  right: -16px;
+  z-index: 5;
+  border-radius: 0 0 5px 5px;
+  box-shadow: inset 0 -4px 6px rgba(255,255,255,0.1);
 }
 
 .black.active {
-  background: #555;
+  background: #333;
+  transform: translateY(3px);
+}
+
+.info {
+  position: absolute;
+  top: -40px;
+  width: 100%;
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="piano" id="piano"></div>
+<div class="piano" id="piano">
+  <div class="info">Press 0 to toggle Cheat Mode (Moonlight Sonata)</div>
+</div>
 
 <script>
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 
-const keys = "123456789qwertzuiopasdfghjklyxcvbnm".split("");
+function playPiano(freq) {
+  const now = audioCtx.currentTime;
+  const output = audioCtx.createGain();
+  output.gain.setValueAtTime(0.7, now);
+  output.gain.exponentialRampToValueAtTime(0.001, now + 3);
+  output.connect(audioCtx.destination);
 
-// Frequencies from high → low
-const notes = [
-  1046.5, 987.8, 932.3, 880, 830.6, 784,
-  740, 698.5, 659.3, 622.3, 587.3,
-  554.4, 523.3, 493.9, 466.2, 440,
-  415.3, 392, 370, 349.2, 329.6,
-  311.1, 293.7, 277.2, 261.6,
-  246.9, 233.1, 220, 207.7, 196,
-  185, 174.6, 164.8
-];
-
-const piano = document.getElementById("piano");
-const keyMap = {};
-
-function playNote(freq) {
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-
-  osc.type = "sine";
-  osc.frequency.value = freq;
-
-  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
-
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start();
-  osc.stop(audioCtx.currentTime + 1);
-}
-
-notes.forEach((freq, i) => {
-  const key = document.createElement("div");
-  key.className = "key white";
-  key.textContent = keys[i];
-
-  key.onclick = () => playNote(freq);
-
-  piano.appendChild(key);
-  keyMap[keys[i]] = freq;
-});
-
-// Keyboard input
-document.addEventListener("keydown", e => {
-  if (e.key === "0") {
-    cheaterMode();
-    return;
-  }
-
-  if (keyMap[e.key]) {
-    playNote(keyMap[e.key]);
-  }
-});
-
-// Cheater mode
-function cheaterMode() {
-  let time = 0;
-
-  // Highest → lowest
-  notes.forEach(freq => {
-    setTimeout(() => playNote(freq), time);
-    time += 120;
-  });
-
-  // Relaxing melody
-  const melody = [
-    523.3, 587.3, 659.3, 587.3,
-    523.3, 493.9, 440, 392,
-    440, 493.9, 523.3
+  const harmonics = [
+    { m: 1, g: 1 },
+    { m: 2, g: 0.4 },
+    { m: 3, g: 0.25 },
+    { m: 4, g: 0.1 }
   ];
 
-  melody.forEach(freq => {
-    setTimeout(() => playNote(freq), time);
-    time += 350;
+  harmonics.forEach(h => {
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+
+    osc.type = "triangle";
+    osc.frequency.value = freq * h.m;
+
+    g.gain.setValueAtTime(h.g, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+
+    osc.connect(g);
+    g.connect(output);
+
+    osc.start(now);
+    osc.stop(now + 3);
   });
 }
+
+const noteFreq = {
+  "G#3":207.65,"A3":220,"B3":246.94,
+  "C#4":277.18,"D#4":311.13,"E4":329.63,"F#4":369.99,
+  "G#4":415.3,"A4":440
+};
+
+const moonlight = [
+  "G#3","C#4","E4",
+  "G#3","C#4","E4",
+  "G#3","C#4","E4",
+  "A3","C#4","E4",
+  "B3","D#4","F#4",
+  "G#3","C#4","E4"
+];
+
+let cheatMode = false;
+let moonIndex = 0;
+
+const piano = document.getElementById("piano");
+const keysByNote = {};
+
+function createWhite(note) {
+  const key = document.createElement("div");
+  key.className = "key white";
+  key.onclick = () => keyPress(note);
+  piano.appendChild(key);
+  keysByNote[note] = key;
+}
+
+function createBlack(note) {
+  const key = document.createElement("div");
+  key.className = "key black";
+  key.onclick = () => keyPress(note);
+  keysByNote[note] = key;
+  return key;
+}
+
+["G#3","A3","B3","C#4","D#4","E4","F#4","G#4","A4"].forEach(note => {
+  createWhite(note);
+});
+
+[
+  { note:"G#3", pos:0 },
+  { note:"C#4", pos:3 },
+  { note:"D#4", pos:4 },
+  { note:"F#4", pos:6 },
+  { note:"G#4", pos:7 }
+].forEach(b => {
+  const key = createBlack(b.note);
+  piano.children[b.pos + 1].appendChild(key);
+});
+
+function keyPress(clickedNote) {
+  if (!cheatMode) {
+    trigger(clickedNote);
+  } else {
+    const correct = moonlight[moonIndex];
+    trigger(correct);
+    moonIndex = (moonIndex + 1) % moonlight.length;
+  }
+}
+
+function trigger(note) {
+  playPiano(noteFreq[note]);
+  const key = keysByNote[note];
+  key.classList.add("active");
+  setTimeout(() => key.classList.remove("active"), 150);
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "0") {
+    cheatMode = !cheatMode;
+    moonIndex = 0;
+    alert("Cheat mode: " + (cheatMode ? "ON" : "OFF"));
+  }
+});
 </script>
 
 </body>
