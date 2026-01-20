@@ -1,129 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Rush E Piano</title>
+<title>Aria Math Piano</title>
 
 <style>
-body {
-  margin: 0;
-  background: radial-gradient(circle at top, #1a1a1a, #000);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow-x: auto;
+body{
+  margin:0;
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  overflow-x:auto;
 }
-
-.piano {
-  display: flex;
-  padding: 25px;
-  background: linear-gradient(#111, #050505);
-  border-radius: 16px;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+.piano{
+  display:flex;
+  padding:20px;
+  background:#111;
+  border-radius:14px;
 }
-
-.key {
-  width: 46px;
-  height: 270px;
-  background: linear-gradient(#fff, #ddd);
-  border: 1px solid #bbb;
-  margin: 1px;
-  cursor: pointer;
-  transition: 0.05s;
+.key{
+  width:44px;
+  height:260px;
+  background:linear-gradient(#fff,#ddd);
+  border:1px solid #aaa;
+  margin:1px;
+  cursor:pointer;
+  transition:.05s;
 }
-
-.key.active {
-  background: #bbb;
-  transform: translateY(6px);
+.key.active{
+  background:#bbb;
+  transform:translateY(6px);
 }
 </style>
 </head>
 
 <body>
-
 <div class="piano" id="piano"></div>
 
 <script>
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-const audioCtx = new AudioContext();
+const AudioContext = window.AudioContext||window.webkitAudioContext;
+const ctx = new AudioContext();
 
-/* -------- SOUND -------- */
-function playPiano(freq) {
-  const now = audioCtx.currentTime;
-  const out = audioCtx.createGain();
-  out.gain.setValueAtTime(0.7, now);
-  out.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
-  out.connect(audioCtx.destination);
+function piano(freq){
+  const now=ctx.currentTime;
+  const out=ctx.createGain();
+  out.gain.setValueAtTime(.7,now);
+  out.gain.exponentialRampToValueAtTime(.001,now+3);
+  out.connect(ctx.destination);
 
   [1,2,3,4].forEach((m,i)=>{
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = "triangle";
-    osc.frequency.value = freq * m;
-    g.gain.setValueAtTime(0.6/(i+1), now);
-    g.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
-    osc.connect(g);
-    g.connect(out);
-    osc.start();
-    osc.stop(now + 3);
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.type="triangle";
+    o.frequency.value=freq*m;
+    g.gain.setValueAtTime(.6/(i+1),now);
+    g.gain.exponentialRampToValueAtTime(.001,now+2.5);
+    o.connect(g); g.connect(out);
+    o.start(); o.stop(now+3);
   });
 }
 
-/* -------- 4 OCTAVES -------- */
-const notes = [
-  "C2","D2","E2","F2","G2","A2","B2",
-  "C3","D3","E3","F3","G3","A3","B3",
-  "C4","D4","E4","F4","G4","A4","B4",
-  "C5","D5","E5","F5","G5","A5","B5"
+/* ---- NOTES (4 octaves) ---- */
+const notes=[
+"C2","D2","E2","F2","G2","A2","B2",
+"C3","D3","E3","F3","G3","A3","B3",
+"C4","D4","E4","F4","G4","A4","B4",
+"C5","D5","E5","F5","G5","A5","B5"
 ];
 
-const freq = {
-  C2:65.41,D2:73.42,E2:82.41,F2:87.31,G2:98,A2:110,B2:123.47,
-  C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
-  C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
-  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880,B5:987.77
+const f={
+C2:65.41,D2:73.42,E2:82.41,F2:87.31,G2:98,A2:110,B2:123.47,
+C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
+C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
+C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880,B5:987.77
 };
 
-/* -------- RUSH E (GUIDED) -------- */
-const rushE = [
-  "E5","F5","G5","A5","B5","A5","G5","F5",
-  "E5","D5","C5","B4","A4","G4","F4","E4",
-  "E5","G5","E5","D5","C5","B4","A4"
+/* ---- ARIA MATH (GUIDED STEPS) ---- */
+const ariaMath=[
+["A3"],["C4"],["E4"],["A4"],
+["G4"],["E4"],["C4"],["A3"],
+["A3","E4"],["C4","A4"],
+["E4","C5"],["A4","E5"],
+
+// beat drop
+["A3","E4","A4"],
+["C4","G4","C5"],
+["E4","A4","E5"],
+["A4","C5","A5"],
+["G4","D5","G5"]
 ];
 
-let cheat = false;
-let idx = 0;
+let cheat=false;
+let i=0;
+let speed=420;
 
-/* -------- BUILD PIANO -------- */
-const piano = document.getElementById("piano");
-const keyMap = {};
+/* ---- BUILD ---- */
+const pianoDiv=document.getElementById("piano");
+const keyMap={};
 
-notes.forEach(note => {
-  const k = document.createElement("div");
-  k.className = "key";
-  k.onclick = () => press(note);
-  piano.appendChild(k);
-  keyMap[note] = k;
+notes.forEach(n=>{
+  const k=document.createElement("div");
+  k.className="key";
+  k.onclick=()=>play([n]);
+  pianoDiv.appendChild(k);
+  keyMap[n]=k;
 });
 
-/* -------- PLAY LOGIC -------- */
-function press(note) {
-  const n = cheat ? rushE[idx++] : note;
-  if (idx >= rushE.length) idx = 0;
-  playPiano(freq[n]);
-  keyMap[n].classList.add("active");
-  setTimeout(()=>keyMap[n].classList.remove("active"),120);
+function play(arr){
+  arr.forEach(n=>{
+    piano(f[n]);
+    keyMap[n].classList.add("active");
+    setTimeout(()=>keyMap[n].classList.remove("active"),120);
+  });
 }
 
-/* -------- KEYBOARD -------- */
-document.addEventListener("keydown", e => {
-  if (e.key === "0") {
-    cheat = !cheat;
-    idx = 0;
+/* ---- INPUT ---- */
+document.addEventListener("keydown",e=>{
+  if(e.key==="0"){
+    cheat=!cheat;
+    i=0;
+    speed=420;
+    return;
   }
+  if(!cheat) return;
+
+  play(ariaMath[i]);
+  i=(i+1)%ariaMath.length;
+  speed*=0.94; // progressive speed-up
 });
 </script>
-
 </body>
 </html>
