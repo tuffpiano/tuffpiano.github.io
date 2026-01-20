@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HTML Piano</title>
+
+<style>
+body {
+  background: #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: sans-serif;
+}
+
+.piano {
+  display: flex;
+  position: relative;
+}
+
+.key {
+  border: 1px solid black;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 8px;
+  font-size: 11px;
+  user-select: none;
+}
+
+.white {
+  width: 45px;
+  height: 220px;
+  background: linear-gradient(#fff, #ddd);
+}
+
+.white.active {
+  background: #ccc;
+}
+
+.black {
+  width: 30px;
+  height: 140px;
+  background: linear-gradient(#000, #333);
+  color: white;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  margin-left: -15px;
+}
+
+.black.active {
+  background: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="piano" id="piano"></div>
+
+<script>
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+const keys = "123456789qwertzuiopasdfghjklyxcvbnm".split("");
+
+// Frequencies from high → low
+const notes = [
+  1046.5, 987.8, 932.3, 880, 830.6, 784,
+  740, 698.5, 659.3, 622.3, 587.3,
+  554.4, 523.3, 493.9, 466.2, 440,
+  415.3, 392, 370, 349.2, 329.6,
+  311.1, 293.7, 277.2, 261.6,
+  246.9, 233.1, 220, 207.7, 196,
+  185, 174.6, 164.8
+];
+
+const piano = document.getElementById("piano");
+const keyMap = {};
+
+function playNote(freq) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "sine";
+  osc.frequency.value = freq;
+
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 1);
+}
+
+notes.forEach((freq, i) => {
+  const key = document.createElement("div");
+  key.className = "key white";
+  key.textContent = keys[i];
+
+  key.onclick = () => playNote(freq);
+
+  piano.appendChild(key);
+  keyMap[keys[i]] = freq;
+});
+
+// Keyboard input
+document.addEventListener("keydown", e => {
+  if (e.key === "0") {
+    cheaterMode();
+    return;
+  }
+
+  if (keyMap[e.key]) {
+    playNote(keyMap[e.key]);
+  }
+});
+
+// Cheater mode
+function cheaterMode() {
+  let time = 0;
+
+  // Highest → lowest
+  notes.forEach(freq => {
+    setTimeout(() => playNote(freq), time);
+    time += 120;
+  });
+
+  // Relaxing melody
+  const melody = [
+    523.3, 587.3, 659.3, 587.3,
+    523.3, 493.9, 440, 392,
+    440, 493.9, 523.3
+  ];
+
+  melody.forEach(freq => {
+    setTimeout(() => playNote(freq), time);
+    time += 350;
+  });
+}
+</script>
+
+</body>
+</html>
