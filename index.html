@@ -130,7 +130,7 @@ function highlight(k) {
    KEYBOARD INPUT
 ======================= */
 document.addEventListener("keydown", e => {
-  if (e.code === "Insert") {
+  if (e.code === ".") {
     guidedMode = !guidedMode;
     moonIndex = 0;
     document.getElementById("mode").textContent =
@@ -138,7 +138,7 @@ document.addEventListener("keydown", e => {
     return;
   }
 
-  const key = e.key.toLowerCase();
+  const key = e.key.toLowerKey();
   if (!keyMap[key]) return;
 
   highlight(key);
