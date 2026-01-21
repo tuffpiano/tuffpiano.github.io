@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Dark Cartoon 3D Piano • QWERTZ + Full Keys</title>
+<title>Dark Cartoon 3D Piano • Keyboard Mapped</title>
 <style>
   body {
     margin: 0;
@@ -35,7 +35,7 @@
     left: 50%;
     transform: translate(-50%, -50%) rotateX(15deg) rotateY(2deg);
     transform-style: preserve-3d;
-    width: 1100px;          /* wider for more keys */
+    width: 1180px;          /* wider for 35 keys */
     height: 360px;
   }
 
@@ -109,77 +109,39 @@
     box-shadow: 0 8px 25px #aa44ffaa;
   }
 
+  /* Hands – raised above keys, no fingers */
   .hands {
     position: absolute;
-    bottom: 160px;
+    bottom: 180px;           /* higher to avoid going under keys */
     left: 50%;
     transform: translateX(-50%);
-    width: 880px;           /* wider hands area */
-    height: 260px;
+    width: 960px;
+    height: 220px;
     pointer-events: none;
     z-index: 10;
   }
 
   .hand {
     position: absolute;
-    width: 220px;
-    height: 260px;
+    width: 240px;
+    height: 220px;
     background: linear-gradient(135deg, #ffdbac, #ffb380);
-    border-radius: 100px 100px 55px 55px;
+    border-radius: 110px 110px 60px 60px;
     box-shadow: 
       0 25px 60px #00000099,
       inset 0 12px 35px #ffffff66;
     transform-origin: bottom center;
   }
 
-  .hand.left  { left: -100px; transform: rotate(-18deg); }
-  .hand.right { right: -100px; transform: rotate(18deg); }
-
-  .fingers {
-    position: absolute;
-    bottom: 30px;
-    left: 28px;
-    right: 28px;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .finger {
-    width: 30px;
-    height: 105px;
-    background: #ffe4ca;
-    border-radius: 15px;
-    box-shadow: inset 0 -12px 18px #00000044;
-    position: relative;
-    transform-origin: bottom center;
-  }
-
-  .finger::after {
-    content: "";
-    position: absolute;
-    bottom: -14px;
-    left: 7px;
-    width: 16px;
-    height: 16px;
-    background: #ff7777;
-    border-radius: 50%;
-    box-shadow: 0 5px 12px #ff3333aa;
-  }
-
-  .hand.left  .finger { transform: rotate(12deg); }
-  .hand.right .finger { transform: rotate(-12deg); }
-
-  .finger.pressing {
-    transform: rotate(28deg) translateY(14px) scaleY(0.82) !important;
-    transition: all 0.11s ease;
-  }
+  .hand.left  { left: -120px; transform: rotate(-20deg); }
+  .hand.right { right: -120px; transform: rotate(20deg); }
 
   .label {
     position: absolute;
     top: -34px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: #ddbbff;
     text-shadow: 0 0 14px #9966ff;
     pointer-events: none;
@@ -189,7 +151,7 @@
   .octave-label {
     position: absolute;
     top: -52px;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     color: #bb88ff;
     text-shadow: 0 0 18px #7744ff;
   }
@@ -197,7 +159,7 @@
 </head>
 <body>
 
-<h1>🌑 Dark Cartoon Piano – More Keys + QWERTZ 🌑</h1>
+<h1>🌑 Dark Cartoon Piano – Full Keyboard Mapping 🌑</h1>
 
 <div class="scene">
   <div class="piano-container">
@@ -206,97 +168,47 @@
     <div class="keys-wrapper" id="keys"></div>
 
     <div class="hands">
-      <div class="hand left" id="handLeft">
-        <div class="fingers">
-          <div class="finger" data-finger="1"></div>
-          <div class="finger" data-finger="2"></div>
-          <div class="finger" data-finger="3"></div>
-          <div class="finger" data-finger="4"></div>
-          <div class="finger" data-finger="5"></div>
-        </div>
-      </div>
-      <div class="hand right" id="handRight">
-        <div class="fingers">
-          <div class="finger" data-finger="1"></div>
-          <div class="finger" data-finger="2"></div>
-          <div class="finger" data-finger="3"></div>
-          <div class="finger" data-finger="4"></div>
-          <div class="finger" data-finger="5"></div>
-        </div>
-      </div>
+      <div class="hand left" id="handLeft"></div>
+      <div class="hand right" id="handRight"></div>
     </div>
   </div>
 </div>
 
 <script>
-// Note frequencies (A4 = 440 Hz)
+// Note frequencies (A4 = 440 Hz) - from C3 to ~C6 range
 const noteFreq = {
-  "C3":  130.81, "C#3": 138.59, "D3":  146.83, "D#3": 155.56,
-  "E3":  164.81, "F3":  174.61, "F#3": 185.00, "G3":  196.00,
-  "G#3": 207.65, "A3":  220.00, "A#3": 233.08, "B3":  246.94,
-  "C4":  261.63, "C#4": 277.18, "D4":  293.66, "D#4": 311.13,
-  "E4":  329.63, "F4":  349.23, "F#4": 369.99, "G4":  392.00,
-  "G#4": 415.30, "A4":  440.00, "A#4": 466.16, "B4":  493.88,
-  "C5":  523.25, "C#5": 554.37, "D5":  587.33, "D#5": 622.25,
-  "E5":  659.25, "F5":  698.46, "F#5": 739.99, "G5":  783.99,
-  "G#5": 830.61, "A5":  880.00, "A#5": 932.33, "B5":  987.77,
-  "C6": 1046.50
+  "C3":  130.81, "C#3": 138.59, "D3":  146.83, "D#3": 155.56, "E3":  164.81,
+  "F3":  174.61, "F#3": 185.00, "G3":  196.00, "G#3": 207.65, "A3":  220.00,
+  "A#3": 233.08, "B3":  246.94,
+  "C4":  261.63, "C#4": 277.18, "D4":  293.66, "D#4": 311.13, "E4":  329.63,
+  "F4":  349.23, "F#4": 369.99, "G4":  392.00, "G#4": 415.30, "A4":  440.00,
+  "A#4": 466.16, "B4":  493.88,
+  "C5":  523.25, "C#5": 554.37, "D5":  587.33, "D#5": 622.25, "E5":  659.25,
+  "F5":  698.46, "F#5": 739.99, "G5":  783.99, "G#5": 830.61, "A5":  880.00,
+  "A#5": 932.33, "B5":  987.77, "C6": 1046.50
 };
 
-const NOTES = [
-  // Lower octave (C3–B3) – mostly numbers + some letters
-  {note:"C3",  key:"1", isBlack:false},
-  {note:"C#3", key:"!", isBlack:true},
-  {note:"D3",  key:"2", isBlack:false},
-  {note:"D#3", key:"\"",isBlack:true},
-  {note:"E3",  key:"3", isBlack:false},
-  {note:"F3",  key:"4", isBlack:false},
-  {note:"F#3", key:"$", isBlack:true},
-  {note:"G3",  key:"5", isBlack:false},
-  {note:"G#3", key:"%", isBlack:true},
-  {note:"A3",  key:"6", isBlack:false},
-  {note:"A#3", key:"&", isBlack:true},
-  {note:"B3",  key:"7", isBlack:false},
+const keyOrder = "1234567890qwertzuiopasdfghjklyxcvbnm".split("");
+const NOTES = [];
 
-  // Main octave C4–B4 (qwertz style – z is now where y was in qwerty)
-  {note:"C4",  key:"y", isBlack:false},   // y = C (common in some virtual pianos)
-  {note:"C#4", key:"s", isBlack:true},
-  {note:"D4",  key:"x", isBlack:false},
-  {note:"D#4", key:"d", isBlack:true},
-  {note:"E4",  key:"c", isBlack:false},
-  {note:"F4",  key:"v", isBlack:false},
-  {note:"F#4", key:"g", isBlack:true},
-  {note:"G4",  key:"b", isBlack:false},
-  {note:"G#4", key:"h", isBlack:true},
-  {note:"A4",  key:"n", isBlack:false},
-  {note:"A#4", key:"j", isBlack:true},
-  {note:"B4",  key:"m", isBlack:false},
-
-  // Higher octave C5–C6
-  {note:"C5",  key:"q", isBlack:false},
-  {note:"C#5", key:"2", isBlack:true},   // reuse some numbers with shift if needed, but here direct
-  {note:"D5",  key:"w", isBlack:false},
-  {note:"D#5", key:"3", isBlack:true},
-  {note:"E5",  key:"e", isBlack:false},
-  {note:"F5",  key:"r", isBlack:false},
-  {note:"F#5", key:"5", isBlack:true},
-  {note:"G5",  key:"t", isBlack:false},
-  {note:"G#5", key:"6", isBlack:true},
-  {note:"A5",  key:"z", isBlack:false},   // z moved here (qwertz has z left)
-  {note:"A#5", key:"7", isBlack:true},
-  {note:"B5",  key:"u", isBlack:false},
-  {note:"C6",  key:"i", isBlack:false},
-];
+// Assign notes sequentially from C3 upwards (35 keys ≈ 2.9 octaves)
+const startNote = 48; // MIDI 48 = C3
+keyOrder.forEach((k, i) => {
+  const midi = startNote + i;
+  const freq = 440 * Math.pow(2, (midi - 69) / 12);
+  const octave = Math.floor(midi / 12) - 1;
+  const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const note = noteNames[midi % 12] + octave;
+  NOTES.push({
+    note: note,
+    key: k.toLowerCase(),
+    isBlack: note.includes("#"),
+    freq: freq
+  });
+});
 
 const keyMap = {};
-NOTES.forEach(n => {
-  keyMap[n.key.toLowerCase()] = n;
-  // Also support uppercase / shift versions for some black keys if user presses shift
-  if (n.isBlack) {
-    const upper = n.key.toUpperCase();
-    if (upper !== n.key) keyMap[upper] = n;
-  }
-});
+NOTES.forEach(n => keyMap[n.key] = n);
 
 const piano = document.getElementById("keys");
 const handL = document.getElementById("handLeft");
@@ -315,7 +227,7 @@ NOTES.forEach((item) => {
     lbl.textContent = item.note;
     k.appendChild(lbl);
 
-    if (item.note === "C4" || item.note === "C5" || item.note === "C3") {
+    if (item.note === "C3" || item.note === "C4" || item.note === "C5") {
       const oct = document.createElement("div");
       oct.className = "octave-label";
       oct.textContent = item.note;
@@ -326,37 +238,77 @@ NOTES.forEach((item) => {
   piano.appendChild(k);
 });
 
-function playNote(note) {
-  if (!noteFreq[note]) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = "sawtooth";
-  osc.frequency.value = noteFreq[note];
-  gain.gain.setValueAtTime(0.0, audioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(0.42, audioCtx.currentTime + 0.008);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.4);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 1.5);
+// Better piano-like sound: multiple oscillators + noise + envelope
+function playNote(freq) {
+  if (!freq) return;
+
+  const now = audioCtx.currentTime;
+
+  // Main tone - sawtooth + triangle mix
+  const osc1 = audioCtx.createOscillator();
+  osc1.type = "sawtooth";
+  osc1.frequency.value = freq;
+
+  const osc2 = audioCtx.createOscillator();
+  osc2.type = "triangle";
+  osc2.frequency.value = freq;
+
+  // Slight detune for richness
+  osc2.detune.value = 3;
+
+  // Hammer / attack noise
+  const noise = audioCtx.createBufferSource();
+  const bufferSize = audioCtx.sampleRate * 0.02; // 20ms noise burst
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  noise.buffer = buffer;
+
+  // Gain nodes
+  const gain1 = audioCtx.createGain();
+  const gain2 = audioCtx.createGain();
+  const noiseGain = audioCtx.createGain();
+
+  // Envelope
+  gain1.gain.setValueAtTime(0, now);
+  gain1.gain.linearRampToValueAtTime(0.5, now + 0.008);   // fast attack
+  gain1.gain.exponentialRampToValueAtTime(0.001, now + 1.8); // decay
+
+  gain2.gain.setValueAtTime(0, now);
+  gain2.gain.linearRampToValueAtTime(0.3, now + 0.01);
+  gain2.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+
+  noiseGain.gain.setValueAtTime(0.15, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08); // short noise burst
+
+  // Connect
+  osc1.connect(gain1);
+  osc2.connect(gain2);
+  noise.connect(noiseGain);
+
+  gain1.connect(audioCtx.destination);
+  gain2.connect(audioCtx.destination);
+  noiseGain.connect(audioCtx.destination);
+
+  osc1.start(now);
+  osc2.start(now);
+  noise.start(now);
+  osc1.stop(now + 2);
+  osc2.stop(now + 2.2);
+  noise.stop(now + 0.1);
 }
 
-function pressFinger(hand, relX, fingerIndex = Math.floor(Math.random()*4)+1) {
+function moveHand(hand, relX) {
   const current = parseFloat(hand.style.left || "0");
-  const target = relX - 550; // center of wider piano
-  hand.style.transition = "left 0.17s ease-out, transform 0.13s";
-  hand.style.left = (current + (target - current) * 0.68) + "px";
-  hand.style.transform = `rotate(${18 + (target - current)*0.11}deg) scale(1.07, 0.93)`;
+  const target = relX - 590; // center adjustment for wider piano
+  hand.style.transition = "left 0.18s ease-out, transform 0.14s";
+  hand.style.left = (current + (target - current) * 0.65) + "px";
+  hand.style.transform = `rotate(${20 + (target - current)*0.09}deg) scale(1.05, 0.95)`;
   setTimeout(() => {
-    hand.style.transform = `rotate(${18 + (target - current)*0.05}deg) scale(1,1)`;
-  }, 130);
-
-  const fingers = hand.querySelectorAll(".finger");
-  fingers.forEach(f => f.classList.remove("pressing"));
-  if (fingerIndex >= 0 && fingerIndex < fingers.length) {
-    fingers[fingerIndex-1].classList.add("pressing");
-    setTimeout(() => fingers[fingerIndex-1].classList.remove("pressing"), 200);
-  }
+    hand.style.transform = `rotate(${20 + (target - current)*0.04}deg) scale(1,1)`;
+  }, 140);
 }
 
 window.addEventListener("keydown", e => {
@@ -369,17 +321,17 @@ window.addEventListener("keydown", e => {
   if (!keyEl) return;
 
   keyEl.classList.add("pressed");
-  playNote(info.note);
+  playNote(info.freq);
 
   const keyRect = keyEl.getBoundingClientRect();
   const pianoRect = piano.getBoundingClientRect();
   const relX = keyRect.left - pianoRect.left + keyRect.width / 2;
 
-  // Rough left/right hand split (you can refine later)
-  if (["1","2","3","4","5","6","7","y","x","c","v","b","n","m","s","d","g","h","j"].includes(k)) {
-    pressFinger(handL, relX, Math.floor(Math.random()*3)+2);
+  // Simple left/right split (first half keys → left hand)
+  if (keyOrder.indexOf(k) < keyOrder.length / 2) {
+    moveHand(handL, relX);
   } else {
-    pressFinger(handR, relX, Math.floor(Math.random()*3)+1);
+    moveHand(handR, relX);
   }
 });
 
@@ -391,7 +343,7 @@ window.addEventListener("keyup", e => {
   keyEl?.classList.remove("pressed");
 });
 
-// Touch support
+// Touch/click support
 piano.addEventListener("pointerdown", e => {
   e.preventDefault();
   const key = e.target.closest(".key");
@@ -401,13 +353,13 @@ piano.addEventListener("pointerdown", e => {
   if (!info) return;
 
   key.classList.add("pressed");
-  playNote(note);
+  playNote(info.freq);
 
   const relX = e.clientX - piano.getBoundingClientRect().left;
   if (relX < piano.offsetWidth / 2) {
-    pressFinger(handL, relX);
+    moveHand(handL, relX);
   } else {
-    pressFinger(handR, relX);
+    moveHand(handR, relX);
   }
 });
 
